@@ -14,7 +14,7 @@ JSON Simple Reader
 ## Example
 ```go
 import (
-    "github.com/jonathanhecl/csvreader"
+    "github.com/jonathanhecl/jsonreader"
 )
 
 func main() {
