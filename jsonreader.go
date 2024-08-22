@@ -32,20 +32,27 @@ func LoadFileJSON(filename string) (JSONStruct, error) {
 }
 
 func ReadJSON(content string) (JSONStruct, error) {
-	fmt.Println(content)
 
 	arrayGroup := 0
 	objectGroup := 0
+	objects := []string{}
+	object := []byte{}
+
 	for i := 0; i < len(content); i++ {
-		fmt.Println(i, string(content[i]))
-		if content[i] == '[' {
+		if content[i] == '[' && objectGroup == 0 {
 			arrayGroup++
 		} else if content[i] == '{' {
 			objectGroup++
-		} else if content[i] == ']' {
+		} else if content[i] == ']' && objectGroup == 0 {
 			arrayGroup--
 		} else if content[i] == '}' {
 			objectGroup--
+			if objectGroup == 0 {
+				objects = append(objects, string(object))
+				object = []byte{}
+			}
+		} else if objectGroup > 0 {
+			object = append(object, content[i])
 		}
 
 		if i == 0 && arrayGroup == 0 {
@@ -54,7 +61,12 @@ func ReadJSON(content string) (JSONStruct, error) {
 	}
 
 	if arrayGroup != 0 || objectGroup != 0 {
-		return JSONStruct{}, errors.New("Invalid JSON array")
+		return JSONStruct{}, errors.New("Invalid JSON")
+	}
+
+	fmt.Println("Objects: ")
+	for i := 0; i < len(objects); i++ {
+		fmt.Println(i, objects[i])
 	}
 
 	return JSONStruct{}, nil

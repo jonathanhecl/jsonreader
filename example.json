@@ -1,3 +1,3 @@
-[{"id":1,"father":"Mark","mother":"Charlotte","children":1},
+[{"id":1,"father":"Mark","mother":"Charlotte","children":["pepito","papito"]},
 {"id":2,"father":"John","mother":"Ann","children":3},
 {"id":3,"father":"Bob","mother":"Monika","children":2}]
