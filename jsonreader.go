@@ -1,6 +1,10 @@
 package jsonreader
 
-import "os"
+import (
+	"errors"
+	"fmt"
+	"os"
+)
 
 type JSONStruct struct {
 	Headers []string                  // Headers[0] = "label"
@@ -15,10 +19,9 @@ func LoadFileJSON(filename string) (JSONStruct, error) {
 	defer jsonFile.Close()
 
 	content := []byte{}
-	_, err = jsonFile.Read(content)
-	if err != nil {
-		return JSONStruct{}, err
-	}
+
+	byteValue, _ := os.ReadFile(filename)
+	content = append(content, byteValue...)
 
 	ret, err := ReadJSON(string(content))
 	if err != nil {
@@ -29,8 +32,30 @@ func LoadFileJSON(filename string) (JSONStruct, error) {
 }
 
 func ReadJSON(content string) (JSONStruct, error) {
-	// Read char by char
-	// @todo
+	fmt.Println(content)
+
+	arrayGroup := 0
+	objectGroup := 0
+	for i := 0; i < len(content); i++ {
+		fmt.Println(i, string(content[i]))
+		if content[i] == '[' {
+			arrayGroup++
+		} else if content[i] == '{' {
+			objectGroup++
+		} else if content[i] == ']' {
+			arrayGroup--
+		} else if content[i] == '}' {
+			objectGroup--
+		}
+
+		if i == 0 && arrayGroup == 0 {
+			return JSONStruct{}, errors.New("Invalid JSON array")
+		}
+	}
+
+	if arrayGroup != 0 || objectGroup != 0 {
+		return JSONStruct{}, errors.New("Invalid JSON array")
+	}
 
 	return JSONStruct{}, nil
 }
