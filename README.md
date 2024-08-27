@@ -26,7 +26,6 @@ func main() {
     // ...
     data2, err := jsonreader.ReadJSON("{\"id\":1,\"father\":\"Mark\",\"mother\":\"Charlotte\",\"children\":2}")
     // ...
-
 }
 
 ```
