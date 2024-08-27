@@ -22,7 +22,11 @@ import (
 )
 
 func main() {
-     // ...
+    data, err := jsonreader.LoadFileJSON("example.json")
+    // ...
+    data2, err := jsonreader.ReadJSON("{\"id\":1,\"father\":\"Mark\",\"mother\":\"Charlotte\",\"children\":2}")
+    // ...
+
 }
 
 ```

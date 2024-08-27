@@ -1,6 +1,7 @@
 package jsonreader
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -39,35 +40,84 @@ func ReadJSON(content string) (JSONStruct, error) {
 	object := []byte{}
 
 	for i := 0; i < len(content); i++ {
-		if content[i] == '[' && objectGroup == 0 {
+		if content[i] == '[' && objectGroup == 0 { // Start of array
 			arrayGroup++
+		} else if content[i] == ']' && objectGroup == 0 { // End of array
+			arrayGroup--
 		} else if content[i] == '{' {
 			objectGroup++
-		} else if content[i] == ']' && objectGroup == 0 {
-			arrayGroup--
 		} else if content[i] == '}' {
 			objectGroup--
-			if objectGroup == 0 {
-				objects = append(objects, string(object))
+			if objectGroup == 0 { // End of main object
+				objects = append(objects, "{"+string(object)+"}")
 				object = []byte{}
 			}
-		} else if objectGroup > 0 {
+		} else if objectGroup > 0 { // In object
 			object = append(object, content[i])
 		}
 
-		if i == 0 && arrayGroup == 0 {
+		if i == 0 && arrayGroup == 0 { // If not is an array then it's invalid
 			return JSONStruct{}, errors.New("Invalid JSON array")
 		}
 	}
 
-	if arrayGroup != 0 || objectGroup != 0 {
+	if arrayGroup != 0 || objectGroup != 0 { // If some groups are not closed then it's invalid
 		return JSONStruct{}, errors.New("Invalid JSON")
 	}
 
-	fmt.Println("Objects: ")
-	for i := 0; i < len(objects); i++ {
-		fmt.Println(i, objects[i])
+	res, err := getStruct(objects)
+	if err != nil {
+		return JSONStruct{}, err
 	}
 
-	return JSONStruct{}, nil
+	return res, nil
+}
+
+func getStruct(objects []string) (JSONStruct, error) {
+	res := JSONStruct{
+		Headers: []string{},
+		Rows:    make(map[int]map[string]string),
+	}
+
+	headerMap := make(map[string]bool)
+
+	for i, obj := range objects {
+		var data map[string]interface{}
+		err := json.Unmarshal([]byte(obj), &data)
+		if err != nil {
+			fmt.Println("Error unmarshalling JSON:", err)
+			continue
+		}
+
+		row := make(map[string]string)
+
+		for key, value := range data {
+			if !headerMap[key] {
+				res.Headers = append(res.Headers, key)
+				headerMap[key] = true
+			}
+
+			valueStr, err := json.Marshal(value)
+			if err != nil {
+				return JSONStruct{}, err
+			}
+
+			row[key] = removeQuotes(string(valueStr))
+		}
+
+		res.Rows[i] = row
+	}
+
+	return res, nil
+}
+
+func removeQuotes(s string) string {
+	if len(s) > 0 && s[0] == '"' {
+		s = s[1:]
+	}
+	if len(s) > 0 && s[len(s)-1] == '"' {
+		s = s[:len(s)-1]
+	}
+
+	return s
 }
