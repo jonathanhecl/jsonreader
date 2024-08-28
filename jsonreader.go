@@ -13,16 +13,10 @@ type JSONStruct struct {
 }
 
 func LoadFileJSON(filename string) (JSONStruct, error) {
-	jsonFile, err := os.Open(filename)
+	content, err := getContentFile(filename)
 	if err != nil {
 		return JSONStruct{}, err
 	}
-	defer jsonFile.Close()
-
-	content := []byte{}
-
-	byteValue, _ := os.ReadFile(filename)
-	content = append(content, byteValue...)
 
 	ret, err := ReadJSON(string(content))
 	if err != nil {
@@ -30,6 +24,35 @@ func LoadFileJSON(filename string) (JSONStruct, error) {
 	}
 
 	return ret, nil
+}
+
+func LoadFileJSONLine(filename string) (JSONStruct, error) {
+	content, err := getContentFile(filename)
+	if err != nil {
+		return JSONStruct{}, err
+	}
+
+	ret, err := ReadJSONLine(string(content))
+	if err != nil {
+		return JSONStruct{}, err
+	}
+
+	return ret, nil
+}
+
+func getContentFile(filename string) ([]byte, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	content := []byte{}
+
+	byteValue, _ := os.ReadFile(filename)
+	content = append(content, byteValue...)
+
+	return content, nil
 }
 
 func ReadJSON(content string) (JSONStruct, error) {
