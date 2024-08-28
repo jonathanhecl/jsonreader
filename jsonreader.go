@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 )
 
 type JSONStruct struct {
@@ -18,7 +19,7 @@ func LoadFileJSON(filename string) (JSONStruct, error) {
 		return JSONStruct{}, err
 	}
 
-	ret, err := ReadJSON(string(content))
+	ret, err := ReadJSON(content)
 	if err != nil {
 		return JSONStruct{}, err
 	}
@@ -32,7 +33,7 @@ func LoadFileJSONLine(filename string) (JSONStruct, error) {
 		return JSONStruct{}, err
 	}
 
-	ret, err := ReadJSONLine(string(content))
+	ret, err := ReadJSONLine(content)
 	if err != nil {
 		return JSONStruct{}, err
 	}
@@ -40,10 +41,10 @@ func LoadFileJSONLine(filename string) (JSONStruct, error) {
 	return ret, nil
 }
 
-func getContentFile(filename string) ([]byte, error) {
+func getContentFile(filename string) (string, error) {
 	file, err := os.Open(filename)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	defer file.Close()
 
@@ -52,11 +53,10 @@ func getContentFile(filename string) ([]byte, error) {
 	byteValue, _ := os.ReadFile(filename)
 	content = append(content, byteValue...)
 
-	return content, nil
+	return string(content), nil
 }
 
 func ReadJSON(content string) (JSONStruct, error) {
-
 	arrayGroup := 0
 	objectGroup := 0
 	objects := []string{}
@@ -87,6 +87,17 @@ func ReadJSON(content string) (JSONStruct, error) {
 	if arrayGroup != 0 || objectGroup != 0 { // If some groups are not closed then it's invalid
 		return JSONStruct{}, errors.New("Invalid JSON")
 	}
+
+	res, err := getStruct(objects)
+	if err != nil {
+		return JSONStruct{}, err
+	}
+
+	return res, nil
+}
+
+func ReadJSONLine(content string) (JSONStruct, error) {
+	objects := strings.Split(content, "\n")
 
 	res, err := getStruct(objects)
 	if err != nil {
