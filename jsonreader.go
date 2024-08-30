@@ -8,9 +8,22 @@ import (
 	"strings"
 )
 
+type DataStruct interface {
+	GetHeaders() []string
+	GetRows() map[int]map[string]string
+}
+
 type JSONStruct struct {
 	Headers []string                  // Headers[0] = "label"
 	Rows    map[int]map[string]string // Rows[0]["label"] = "value"
+}
+
+func (c JSONStruct) GetHeaders() []string {
+	return c.Headers
+}
+
+func (c JSONStruct) GetRows() map[int]map[string]string {
+	return c.Rows
 }
 
 func LoadFileJSON(filename string) (JSONStruct, error) {
